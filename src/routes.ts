@@ -49,7 +49,7 @@ router.post(
 
     const token = issueToken(username);
     res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
-    res.status(200).json({ ok: true });
+    res.status(200).json({ ok: true, token });
   }
 );
 

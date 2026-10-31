@@ -76,9 +76,16 @@ export function requireAuth(
   next: NextFunction
 ): void {
   const cookies = req.cookies as Record<string, unknown> | undefined;
-  const token = cookies?.[COOKIE_NAME];
+  const cookieToken = cookies?.[COOKIE_NAME];
+  const authHeader = req.headers.authorization;
+  const bearerToken =
+    typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : undefined;
 
-  if (typeof token !== 'string' || !token) {
+  const rawToken = typeof cookieToken === 'string' && cookieToken ? cookieToken : bearerToken;
+
+  if (typeof rawToken !== 'string' || !rawToken) {
     res.status(401).json({
       error: {
         code: 'unauthenticated',
@@ -88,7 +95,7 @@ export function requireAuth(
     return;
   }
 
-  const payload = readToken(token);
+  const payload = readToken(rawToken);
   if (!payload) {
     res.status(401).json({
       error: {
