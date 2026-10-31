@@ -12,9 +12,21 @@ if (config.NODE_ENV === 'production') {
 
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
+const allowedOrigins = config.FRONTEND_ORIGIN.split(',').map((o) => o.trim());
+
 app.use(
   cors({
-    origin: config.FRONTEND_ORIGIN,
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        (config.NODE_ENV === 'development' && origin.startsWith('http://localhost:'))
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   })
 );
